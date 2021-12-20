@@ -1,0 +1,52 @@
+#compdef _expressvpn expressvpn
+
+function _expressvpn () {
+
+typeset -A opt_args
+
+_arguments -C \
+  '-h[show help]' \
+  '--help[show help]' \
+  '-v[print the version]' \
+  '--version[print the version]' \
+  '1:cmd:->cmds' \
+  '2:locations:->locations_lists' \
+  '*:: :->args' \
+&& ret=0
+
+case "$state" in
+  (cmds)
+    local commands; commands=(
+      'activate:Activate account'
+      'connect:Connect to VPN'
+      'disconnect:Disconnect from VPN'
+      'status:Display service information'
+      'list:List VPN locations (alternatively use 'ls')'
+      'autoconnect:Enable / disable auto-connect'
+      'protocol:Display / change preferred protocol'
+      'refresh:Refresh VPN clusters'
+      'logout:Logout ExpressVPN account'
+      'diagnostics:Display connection diagnostics'
+      'preferences:List user preferences'
+      'install-chrome-extension:Install ExpressVPN Chrome Extension'
+      'install-firefox-extension:Install ExpressVPN Firefox Extension'
+      'help:Shows a list of commands or help for one command (alternatively use 'h')'
+    )
+    _describe -t commands 'command' commands -- arguments && ret=0
+  ;;
+  (locations_lists)
+    case $line[1] in
+      (connect)
+        local connect_commands;
+        connect_commands=( $(expressvpn ls recommended 2>/dev/null | awk '$0~/^[[:space:]]*$/ {enable_scrape=0}  {if(enable_scrape==1){print $1 ":" $2 "(" $3 ")"}}  $0~/^\-\-\-\-/ {enable_scrape=1}  BEGIN {enable_scrape=0}') )
+        _describe -t connect_commands 'command' connect_commands && ret=0
+      ;;
+    esac
+  ;;
+esac
+
+return 1
+}
+
+zstyle ':completion:*' verbose yes
+
